@@ -9,8 +9,9 @@ export default class ChartComponent extends BaseComponent {
   static schema(...extend) {
     return BaseComponent.schema({
       type: 'chart',
+      label: 'Chart',
+      hideLabel: false,
       attrs: [],
-      content: '',
       input: false,
       persistent: false,
       chartType: 'bar',
@@ -137,19 +138,33 @@ export default class ChartComponent extends BaseComponent {
     return ChartComponent.schema();
   }
 
+  createCanvas(container) {
+    const wrapper = this.ce('div', { class: 'chartjs-wrapper' });
+    this.canvasElement = this.ce('canvas', { class: 'chartjs-canvas' });
+    this.setInputStyles(wrapper);
+    wrapper.appendChild(this.canvasElement);
+    container.appendChild(wrapper);
+  }
+
   build() {
-    this.element = this.ce('div', {
-      id: this.id,
-      class: this.component.className
-    });
+    this.createElement();
     this.element.component = this;
+
+    const labelAtTheBottom = this.component.labelPosition === 'bottom';
+    if (!labelAtTheBottom) {
+      this.createLabel(this.element);
+    }
+    this.createCanvas(this.element);
+    if (labelAtTheBottom) {
+      this.createLabel(this.element);
+    }
+    this.createDescription(this.element);
+
     _.each(this.component.attrs, (attr) => {
       if (attr.attr) {
         this.element.setAttribute(attr.attr, attr.value);
       }
     });
-
-    this.element.innerHTML = `<canvas class="chartjs-canvas"></canvas>`;
     
     this.refreshChart();
 
